@@ -1,0 +1,16 @@
+C:\Users\nmiller\source\repos\ExportToExcel\ExportToExcel\bin\Debug\ExportToExcel.dll
+C:\Users\nmiller\source\repos\ExportToExcel\ExportToExcel\bin\Debug\ExportToExcel.pdb
+C:\Users\nmiller\source\repos\ExportToExcel\ExportToExcel\bin\Debug\EPPlus.dll
+C:\Users\nmiller\source\repos\ExportToExcel\ExportToExcel\bin\Debug\System.Configuration.ConfigurationManager.dll
+C:\Users\nmiller\source\repos\ExportToExcel\ExportToExcel\bin\Debug\System.Security.AccessControl.dll
+C:\Users\nmiller\source\repos\ExportToExcel\ExportToExcel\bin\Debug\System.Security.Permissions.dll
+C:\Users\nmiller\source\repos\ExportToExcel\ExportToExcel\bin\Debug\System.Security.Principal.Windows.dll
+C:\Users\nmiller\source\repos\ExportToExcel\ExportToExcel\bin\Debug\EPPlus.xml
+C:\Users\nmiller\source\repos\ExportToExcel\ExportToExcel\bin\Debug\System.Configuration.ConfigurationManager.xml
+C:\Users\nmiller\source\repos\ExportToExcel\ExportToExcel\bin\Debug\System.Security.AccessControl.xml
+C:\Users\nmiller\source\repos\ExportToExcel\ExportToExcel\bin\Debug\System.Security.Permissions.xml
+C:\Users\nmiller\source\repos\ExportToExcel\ExportToExcel\bin\Debug\System.Security.Principal.Windows.xml
+C:\Users\nmiller\source\repos\ExportToExcel\ExportToExcel\obj\Debug\ExportToExcel.csprojAssemblyReference.cache
+C:\Users\nmiller\source\repos\ExportToExcel\ExportToExcel\obj\Debug\ExportToExcel.csproj.CopyComplete
+C:\Users\nmiller\source\repos\ExportToExcel\ExportToExcel\obj\Debug\ExportToExcel.dll
+C:\Users\nmiller\source\repos\ExportToExcel\ExportToExcel\obj\Debug\ExportToExcel.pdb
