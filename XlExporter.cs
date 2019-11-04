@@ -8,7 +8,7 @@ namespace ExportToExcel
     {
         private ExcelPackage xl { get; set; }
         private byte[] xlData { get; set; }
-        private IEnumerable<XlSheet> _data { get; set; }
+        private List<XlSheet> _data { get; set; }
         private XlFileInfo _file { get; set; }
 
         /// <summary>
@@ -25,7 +25,7 @@ namespace ExportToExcel
         /// <param name="method">The optional save method: Local or Download.</param>
         public XlExporter(IEnumerable<XlSheet> sheets, string name, XlSaveMethod method = XlSaveMethod.Local)
         {
-            this._data = sheets;
+            this._data = sheets.ToList();
             this._file = new XlFileInfo(name, sheets, method);
             this.xl = new ExcelPackage(_file.FileSource.Load());
         }
@@ -38,7 +38,7 @@ namespace ExportToExcel
         /// <param name="selected">Optional Tuple containing the sheetname and cell address to be selected when opening the file.</param>
         public XlExporter(IEnumerable<XlSheet> sheets, XlFileInfo fileInfo, (string sheet, string cell)? selected = null)
         {
-            this._data = sheets;
+            this._data = sheets.ToList();
             this._file = fileInfo;
 
             if (_file.FileSource == null || !_file.FileSource.IsValid())
@@ -52,6 +52,12 @@ namespace ExportToExcel
             {
                 OpenSelect = selected;
             }
+        }
+
+        public XlExporter(IEnumerable<object> data)
+        {
+            _data = new List<XlSheet> { new XlSheet(data) };
+
         }
 
         /// <summary>
@@ -106,6 +112,12 @@ namespace ExportToExcel
             xlData = xl.GetAsByteArray();
 
             return _file.Output.Save(xlData, _file);
+        }
+
+        public void AddSheet(IEnumerable<object> data)
+        {
+            var newData = new XlSheet(data);
+            _data.Add(newData);
         }
     }
 }

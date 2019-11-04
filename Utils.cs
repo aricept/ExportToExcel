@@ -45,7 +45,6 @@ namespace ExportToExcel
 
         public static string GetDisplayName(this MemberInfo member)
         {
-            string name;
             var displayName = (DisplayNameAttribute)Attribute.GetCustomAttribute(member, typeof(DisplayNameAttribute));
             if (displayName != null)
             {
