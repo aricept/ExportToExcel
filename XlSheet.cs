@@ -9,9 +9,9 @@ namespace ExportToExcel
     /// Class for transmitting information about data into the exporter.
     /// </summary>
     /// <typeparam name="T"></typeparam>
-    public class XlSheet<T>
+    public class XlSheet
     {
-        private List<T> _data;
+        private List<object> _data;
         public string Name { get; set; }
 
         /// <summary>
@@ -21,7 +21,7 @@ namespace ExportToExcel
         {
             get
             {
-                return typeof(T);
+                return _data[0].GetType();
             }
         }
 
@@ -30,7 +30,7 @@ namespace ExportToExcel
         /// </summary>
         public XlSheet()
         {
-            _data = new List<T>();
+            _data = new List<object>();
         }
 
         /// <summary>
@@ -38,7 +38,7 @@ namespace ExportToExcel
         /// </summary>
         /// <param name="name">The Worksheet tab that the data will be added to</param>
         /// <param name="data">List of strongly typed objects from which dat will be pulled to fill the report.</param>
-        public XlSheet(string name, IEnumerable<T> data)
+        public XlSheet(string name, IEnumerable<object> data)
         {
             Name = name;
             _data = data.ToList();
@@ -48,7 +48,7 @@ namespace ExportToExcel
         /// Contains data the exporter uses to create report. Without a provided name, the name will later be determined using the model name.
         /// </summary>
         /// <param name="data">List of strongly typed objects from which dat will be pulled to fill the report.</param>
-        public XlSheet(IEnumerable<T> data)
+        public XlSheet(IEnumerable<object> data)
         {
             _data = data.ToList();
         }
@@ -57,7 +57,7 @@ namespace ExportToExcel
         /// Retrieve current data.
         /// </summary>
         /// <returns>The current list of data.</returns>
-        public IEnumerable<T> Data()
+        public IEnumerable<object> Data()
         {
             return _data;
         }
@@ -66,7 +66,7 @@ namespace ExportToExcel
         /// Add a new range of data.
         /// </summary>
         /// <param name="newData">List of new data to be added.</param>
-        public void Data(IEnumerable<T> newData)
+        public void Data(IEnumerable<object> newData)
         {
             _data.AddRange(newData);
         }

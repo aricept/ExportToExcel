@@ -1,8 +1,8 @@
 ﻿namespace ExportToExcel
 {
-    public class XlDownload<T> : IXlOutput<T>
+    public class XlDownload : IXlOutput
     {
-        public byte[] Save(byte[] data, XlFileInfo<T> file = null)
+        public byte[] Save(byte[] data, XlFileInfo file = null)
         {
             return data;
         }

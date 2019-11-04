@@ -11,7 +11,7 @@ namespace ExportToExcel
     /// <summary>
     /// Contains data about the base file, the save file, and backup file.
     /// </summary>
-    public class XlFileInfo<T>
+    public class XlFileInfo
     {
         /// <summary>
         /// The template path. If one is not provided a blank template will be created.
@@ -19,7 +19,7 @@ namespace ExportToExcel
         public IXlSource FileSource { get; set; }
         public string FileName { get; set; }
         public string BackupPath { get; set; }
-        public IXlOutput<T> Output { get; set; }
+        public IXlOutput Output { get; set; }
         private ExcelPackage xl;
 
         public XlFileInfo() { }
@@ -30,20 +30,20 @@ namespace ExportToExcel
         /// <param name="name">The FileName to use when saving the report.</param>
         /// <param name="data">List of sheets to create the report.</param>
         /// <param name="method">The optional save method: Local or Download.</param>
-        public XlFileInfo(string name, IEnumerable<XlSheet<T>> data, XlSaveMethod method = XlSaveMethod.Local)
+        public XlFileInfo(string name, IEnumerable<XlSheet> data, XlSaveMethod method = XlSaveMethod.Local)
         {
             FileName = name;
 
             if (method == XlSaveMethod.Download)
             {
-                Output = new XlDownload<T>();
+                Output = new XlDownload();
             }
             else
             {
-                Output = new XlDownloadAndBackup<T>();
+                Output = new XlDownloadAndBackup();
             }
 
-            FileSource = new XlBlankSource<T>(data);
+            FileSource = new XlBlankSource(data);
         }
 
         /// <summary>
@@ -52,11 +52,11 @@ namespace ExportToExcel
         /// <param name="name">The FileName to use when saving ethe report.</param>
         /// <param name="directory">How to locate the save directory. This may be an AppSettings key, a virtual path, or the absolute path to the directory.</param>
         /// <param name="data">List of sheets to create the report.</param>
-        public XlFileInfo(string name, string directory, IEnumerable<XlSheet<T>> data)
+        public XlFileInfo(string name, string directory, IEnumerable<XlSheet> data)
         {
             FileName = name;
-            Output = new XlDownloadAndBackup<T>();
-            FileSource = new XlBlankSource<T>(data);
+            Output = new XlDownloadAndBackup();
+            FileSource = new XlBlankSource(data);
 
             BackupPath = Utils.GetDirPathIfExists(directory, out bool exists);
 
@@ -81,11 +81,11 @@ namespace ExportToExcel
 
             if (method == XlSaveMethod.Download)
             {
-                Output = new XlDownload<T>();
+                Output = new XlDownload();
             }
             else
             {
-                Output = new XlDownloadAndBackup<T>();
+                Output = new XlDownloadAndBackup();
             }
 
             FileSource = new XlFileSource(source);
@@ -100,7 +100,7 @@ namespace ExportToExcel
         public XlFileInfo(string source, string name, string backup)
         {
             FileName = name;
-            Output = new XlDownloadAndBackup<T>();
+            Output = new XlDownloadAndBackup();
             FileSource = new XlFileSource(source);
 
             BackupPath = Utils.GetDirPathIfExists(backup, out var backupExists);

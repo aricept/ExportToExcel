@@ -4,7 +4,7 @@ using System.IO;
 
 namespace ExportToExcel
 {
-    public class XlBlankSource<T> : IXlSource
+    public class XlBlankSource : IXlSource
     {
         private byte[] _data { get; }
 
@@ -12,7 +12,7 @@ namespace ExportToExcel
         /// Generates a blank template when no template is provided.
         /// </summary>
         /// <param name="data">List of sheets to generate a report.</param>
-        public XlBlankSource(IEnumerable<XlSheet<T>> data)
+        public XlBlankSource(IEnumerable<XlSheet> data)
         {
             using (var xl = new ExcelPackage())
             {
