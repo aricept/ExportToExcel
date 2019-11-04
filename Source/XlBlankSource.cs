@@ -4,6 +4,8 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel;
 
 namespace ExportToExcel
 {
@@ -57,8 +59,18 @@ namespace ExportToExcel
                         
                         for (var col = 1; col <= props.Length; col++)
                         {
-                            worksheet.Cells[firstBlank, col].Value = props[col - 1].Name;
+                            var prop = props[col - 1];
+                            var displayName = prop.GetDisplayName();
+                            if (!string.IsNullOrEmpty(displayName))
+                            {
+                                worksheet.Cells[firstBlank, col].Value = displayName;
+                            }
+                            else
+                            {
+                                worksheet.Cells[firstBlank, col].Value = props[col - 1].Name;
+                            }
                         }
+                        firstBlank++;
                     }
 
                     // Load the data into the sheet and autofit columns to the data. If this is a new sheet, 
@@ -66,13 +78,13 @@ namespace ExportToExcel
                     //worksheet.Cells[firstBlank, 1].LoadFromCollection(sheet.Data(), newSheet);
                     //worksheet.Cells.AutoFitColumns();
 
-                    for (var row = firstBlank + 1; (row - firstBlank) < sheetList.Count; row++)
+                    for (var row = firstBlank; (row - firstBlank) < sheetList.Count; row++)
                     {
                         var props = baseType.GetProperties();
                         for (var col = 1; col <= props.Length; col++)
                         {
                             Console.WriteLine($"Row {row}, Col {col}, props index {col - 1}");
-                            worksheet.Cells[row, col].Value = props[col - 1].GetValue(sheetList[row]);
+                            worksheet.Cells[row, col].Value = props[col - 1].GetValue(sheetList[row - firstBlank]);
                         }
                     }
 

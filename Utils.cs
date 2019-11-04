@@ -1,5 +1,9 @@
-﻿using System.Configuration;
+﻿using System;
+using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
+using System.Configuration;
 using System.IO;
+using System.Reflection;
 using System.Web.Hosting;
 
 namespace ExportToExcel
@@ -37,6 +41,24 @@ namespace ExportToExcel
             }
 
             return truePath;
+        }
+
+        public static string GetDisplayName(this MemberInfo member)
+        {
+            string name;
+            var displayName = (DisplayNameAttribute)Attribute.GetCustomAttribute(member, typeof(DisplayNameAttribute));
+            if (displayName != null)
+            {
+                return displayName.DisplayName;
+            }
+
+            var displayAttrName = (DisplayAttribute)Attribute.GetCustomAttribute(member, typeof(DisplayAttribute));
+            if (displayAttrName != null)
+            {
+                return displayAttrName.Name;
+            }
+
+            return string.Empty;
         }
     }
 }
