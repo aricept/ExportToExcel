@@ -1,7 +1,7 @@
 ﻿namespace ExportToExcel
 {
-    public interface IXlOutput<T>
+    public interface IXlOutput
     {
-        byte[] Save(byte[] data, XlFileInfo<T> file = null);
+        byte[] Save(byte[] data, XlFileInfo file = null);
     }
 }

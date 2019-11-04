@@ -1,10 +1,15 @@
 ﻿using OfficeOpenXml;
+using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
+using System.Linq;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel;
 
 namespace ExportToExcel
 {
-    public class XlBlankSource<T> : IXlSource
+    public class XlBlankSource : IXlSource
     {
         private byte[] _data { get; }
 
@@ -12,7 +17,7 @@ namespace ExportToExcel
         /// Generates a blank template when no template is provided.
         /// </summary>
         /// <param name="data">List of sheets to generate a report.</param>
-        public XlBlankSource(IEnumerable<XlSheet<T>> data)
+        public XlBlankSource(IEnumerable<XlSheet> data)
         {
             using (var xl = new ExcelPackage())
             {
@@ -39,10 +44,8 @@ namespace ExportToExcel
                         firstBlank = worksheet.Dimension.Rows + 1;
                     }
 
-                    // Load the data into the sheet and autofit columns to the data. If this is a new sheet, 
-                    // header data will also be added based on the model properties.
-                    worksheet.Cells[firstBlank, 1].LoadFromCollection(sheet.Data(), newSheet);
-                    worksheet.Cells.AutoFitColumns();
+                    var sheetList = sheet.Data().ToList();
+                    var baseType = sheetList[0].GetType();
 
                     // If this is a new sheet, set the header styles to make text centered and bold.
                     if (newSheet)
@@ -50,7 +53,43 @@ namespace ExportToExcel
                         var headerStyle = worksheet.Row(firstBlank).Style;
                         headerStyle.Font.Bold = true;
                         headerStyle.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Center;
+
+                        
+                        var props = baseType.GetProperties();
+                        
+                        for (var col = 1; col <= props.Length; col++)
+                        {
+                            var prop = props[col - 1];
+                            var displayName = prop.GetDisplayName();
+                            if (!string.IsNullOrEmpty(displayName))
+                            {
+                                worksheet.Cells[firstBlank, col].Value = displayName;
+                            }
+                            else
+                            {
+                                worksheet.Cells[firstBlank, col].Value = props[col - 1].Name;
+                            }
+                        }
+                        firstBlank++;
                     }
+
+                    // Load the data into the sheet and autofit columns to the data. If this is a new sheet, 
+                    // header data will also be added based on the model properties.
+                    //worksheet.Cells[firstBlank, 1].LoadFromCollection(sheet.Data(), newSheet);
+                    //worksheet.Cells.AutoFitColumns();
+
+                    for (var row = firstBlank; (row - firstBlank) < sheetList.Count; row++)
+                    {
+                        var props = baseType.GetProperties();
+                        for (var col = 1; col <= props.Length; col++)
+                        {
+                            Console.WriteLine($"Row {row}, Col {col}, props index {col - 1}");
+                            worksheet.Cells[row, col].Value = props[col - 1].GetValue(sheetList[row - firstBlank]);
+                        }
+                    }
+
+                    worksheet.Cells.AutoFitColumns();
+
                 }
 
                 this._data = xl.GetAsByteArray();

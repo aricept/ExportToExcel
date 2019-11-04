@@ -1,14 +1,15 @@
 ﻿using OfficeOpenXml;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace ExportToExcel
 {
-    public class XlExporter<T>
+    public class XlExporter
     {
         private ExcelPackage xl { get; set; }
         private byte[] xlData { get; set; }
-        private IEnumerable<XlSheet<T>> _data { get; set; }
-        private XlFileInfo<T> _file { get; set; }
+        private IEnumerable<XlSheet> _data { get; set; }
+        private XlFileInfo _file { get; set; }
 
         /// <summary>
         /// Tuple for providing optional selected cell on file open.
@@ -22,10 +23,10 @@ namespace ExportToExcel
         /// <param name="sheets">List of individual sheets to be added.</param>
         /// <param name="name">Filename to be used when saving/downloading.</param>
         /// <param name="method">The optional save method: Local or Download.</param>
-        public XlExporter(IEnumerable<XlSheet<T>> sheets, string name, XlSaveMethod method = XlSaveMethod.Local)
+        public XlExporter(IEnumerable<XlSheet> sheets, string name, XlSaveMethod method = XlSaveMethod.Local)
         {
             this._data = sheets;
-            this._file = new XlFileInfo<T>(name, sheets, method);
+            this._file = new XlFileInfo(name, sheets, method);
             this.xl = new ExcelPackage(_file.FileSource.Load());
         }
 
@@ -35,14 +36,14 @@ namespace ExportToExcel
         /// <param name="sheets">List of individual sheets to be added.</param>
         /// <param name="fileInfo">The XlFileInfo object containing information about the source and destination of the data.</param>
         /// <param name="selected">Optional Tuple containing the sheetname and cell address to be selected when opening the file.</param>
-        public XlExporter(IEnumerable<XlSheet<T>> sheets, XlFileInfo<T> fileInfo, (string sheet, string cell)? selected = null)
+        public XlExporter(IEnumerable<XlSheet> sheets, XlFileInfo fileInfo, (string sheet, string cell)? selected = null)
         {
             this._data = sheets;
             this._file = fileInfo;
 
             if (_file.FileSource == null || !_file.FileSource.IsValid())
             {
-                _file.FileSource = new XlBlankSource<T>(sheets);
+                _file.FileSource = new XlBlankSource(sheets);
             }
             
             this.xl = new ExcelPackage(_file.FileSource.Load());
@@ -61,7 +62,7 @@ namespace ExportToExcel
         {
             foreach (var report in _data)
             {
-                if (_file.FileSource.GetType().Equals(typeof(XlBlankSource<T>)))
+                if (_file.FileSource.GetType().Equals(typeof(XlBlankSource)))
                 {
                     break;
                 }
@@ -80,7 +81,20 @@ namespace ExportToExcel
                     end = sheet.Dimension.End.Row + 1;
                 }
 
-                sheet.Cells["A" + end].LoadFromCollection(report.Data());
+                var baseType = report.Data().First().GetType();
+                var dataList = report.Data().ToList();
+
+                for (var row = end; row < dataList.Count; row++)
+                {
+                    var props = baseType.GetProperties();
+                    for (var col = 1; col <= props.Length; col++)
+                    {
+                        sheet.Cells[row, col].Value = props[col-1].GetValue(dataList[row]);
+                    }
+                }
+
+                //var reportType = report.Data().First();
+                //sheet.Cells["A" + end].LoadFromCollection(report.Data());
                 sheet.Cells.AutoFitColumns();
             }
 
