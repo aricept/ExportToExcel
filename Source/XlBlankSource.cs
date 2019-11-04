@@ -1,6 +1,9 @@
 ﻿using OfficeOpenXml;
+using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
+using System.Linq;
 
 namespace ExportToExcel
 {
@@ -39,10 +42,8 @@ namespace ExportToExcel
                         firstBlank = worksheet.Dimension.Rows + 1;
                     }
 
-                    // Load the data into the sheet and autofit columns to the data. If this is a new sheet, 
-                    // header data will also be added based on the model properties.
-                    worksheet.Cells[firstBlank, 1].LoadFromCollection(sheet.Data(), newSheet);
-                    worksheet.Cells.AutoFitColumns();
+                    var sheetList = sheet.Data().ToList();
+                    var baseType = sheetList[0].GetType();
 
                     // If this is a new sheet, set the header styles to make text centered and bold.
                     if (newSheet)
@@ -50,7 +51,33 @@ namespace ExportToExcel
                         var headerStyle = worksheet.Row(firstBlank).Style;
                         headerStyle.Font.Bold = true;
                         headerStyle.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Center;
+
+                        
+                        var props = baseType.GetProperties();
+                        
+                        for (var col = 1; col <= props.Length; col++)
+                        {
+                            worksheet.Cells[firstBlank, col].Value = props[col - 1].Name;
+                        }
                     }
+
+                    // Load the data into the sheet and autofit columns to the data. If this is a new sheet, 
+                    // header data will also be added based on the model properties.
+                    //worksheet.Cells[firstBlank, 1].LoadFromCollection(sheet.Data(), newSheet);
+                    //worksheet.Cells.AutoFitColumns();
+
+                    for (var row = firstBlank + 1; (row - firstBlank) < sheetList.Count; row++)
+                    {
+                        var props = baseType.GetProperties();
+                        for (var col = 1; col <= props.Length; col++)
+                        {
+                            Console.WriteLine($"Row {row}, Col {col}, props index {col - 1}");
+                            worksheet.Cells[row, col].Value = props[col - 1].GetValue(sheetList[row]);
+                        }
+                    }
+
+                    worksheet.Cells.AutoFitColumns();
+
                 }
 
                 this._data = xl.GetAsByteArray();

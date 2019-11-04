@@ -1,5 +1,6 @@
 ﻿using OfficeOpenXml;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace ExportToExcel
 {
@@ -80,7 +81,20 @@ namespace ExportToExcel
                     end = sheet.Dimension.End.Row + 1;
                 }
 
-                sheet.Cells["A" + end].LoadFromCollection(report.Data());
+                var baseType = report.Data().First().GetType();
+                var dataList = report.Data().ToList();
+
+                for (var row = end; row < dataList.Count; row++)
+                {
+                    var props = baseType.GetProperties();
+                    for (var col = 1; col <= props.Length; col++)
+                    {
+                        sheet.Cells[row, col].Value = props[col-1].GetValue(dataList[row]);
+                    }
+                }
+
+                //var reportType = report.Data().First();
+                //sheet.Cells["A" + end].LoadFromCollection(report.Data());
                 sheet.Cells.AutoFitColumns();
             }
 
