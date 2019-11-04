@@ -32,6 +32,6 @@ By providing some additional information, the exporter can save the data to a fi
 
 ```csharp
 var report = new XlReporter(reportData, "Employee List.xlsx")
-``
+```
 
 The `XlFileInfo` class can be used to encapsulate file creation information, such as a template, filename, output location, and an alternate backup location as well.
