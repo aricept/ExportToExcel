@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace ExportToExcel
 {
-    public class XlExporter<T>
+    public class XlExporter
     {
         private ExcelPackage xl { get; set; }
         private byte[] xlData { get; set; }
