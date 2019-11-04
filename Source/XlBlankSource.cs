@@ -46,16 +46,14 @@ namespace ExportToExcel
 
                     var sheetList = sheet.Data().ToList();
                     var baseType = sheetList[0].GetType();
+                    var props = baseType.GetProperties();
 
-                    // If this is a new sheet, set the header styles to make text centered and bold.
+                    // If this is a new sheet, set the header styles to make text centered and bold and add headers.
                     if (newSheet)
                     {
                         var headerStyle = worksheet.Row(firstBlank).Style;
                         headerStyle.Font.Bold = true;
                         headerStyle.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Center;
-
-                        
-                        var props = baseType.GetProperties();
                         
                         for (var col = 1; col <= props.Length; col++)
                         {
@@ -73,23 +71,18 @@ namespace ExportToExcel
                         firstBlank++;
                     }
 
-                    // Load the data into the sheet and autofit columns to the data. If this is a new sheet, 
-                    // header data will also be added based on the model properties.
-                    //worksheet.Cells[firstBlank, 1].LoadFromCollection(sheet.Data(), newSheet);
-                    //worksheet.Cells.AutoFitColumns();
-
-                    for (var row = firstBlank; (row - firstBlank) < sheetList.Count; row++)
+                    // Load the data into the sheet and autofit columns to the data.
+                    var row = firstBlank;
+                    for (var i = 0; i < sheetList.Count; i++)
                     {
-                        var props = baseType.GetProperties();
                         for (var col = 1; col <= props.Length; col++)
                         {
-                            Console.WriteLine($"Row {row}, Col {col}, props index {col - 1}");
                             worksheet.Cells[row, col].Value = props[col - 1].GetValue(sheetList[row - firstBlank]);
                         }
+                        row++;
                     }
 
                     worksheet.Cells.AutoFitColumns();
-
                 }
 
                 this._data = xl.GetAsByteArray();
