@@ -66,6 +66,7 @@
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="IXlSheet.cs" />
     <Compile Include="Source\IXlSource.cs" />
     <Compile Include="XlSaveMethod.cs" />
     <Compile Include="Source\XlBlankSource.cs" />
