@@ -5,6 +5,7 @@ namespace ExportToExcel
 {
     public class XlExporter<T>
     {
+        private string testField;
         private ExcelPackage xl { get; set; }
         private byte[] xlData { get; set; }
         private IEnumerable<XlSheet<T>> _data { get; set; }
