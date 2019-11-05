@@ -56,12 +56,13 @@ namespace ExportToExcel
 
         public XlExporter(IEnumerable<object> data)
         {
-            _data = new List<XlSheet> { new XlSheet(data) };
-
+            var newData = new XlSheet(data);
+            _data = new List<XlSheet> { newData };
+            _file = new XlFileInfo(newData.Type.Name, _data);
         }
 
         /// <summary>
-        /// Runs the report, including runing the XlFileInfo's <c>Save</c> method.
+        /// Runs the report, including running the XlFileInfo's <c>Save</c> method.
         /// </summary>
         /// <returns>A <c>byte[]</c> of the file data. This can be diverted elsewhere for saving in a different location or used to download.</returns>
         public byte[] Run()
@@ -74,33 +75,32 @@ namespace ExportToExcel
                 }
 
                 ExcelWorksheet sheet;
-                int end;
+                int row;
 
                 if (xl.Workbook.Worksheets[report.Name] == null)
                 {
                     sheet = xl.Workbook.Worksheets.Add(report.Name);
-                    end = 1;
+                    row = 1;
                 }
                 else
                 {
                     sheet = xl.Workbook.Worksheets[report.Name];
-                    end = sheet.Dimension.End.Row + 1;
+                    row = sheet.Dimension.End.Row + 1;
                 }
 
                 var baseType = report.Data().First().GetType();
                 var dataList = report.Data().ToList();
+                var props = baseType.GetProperties();
 
-                for (var row = end; row < dataList.Count; row++)
+                for (var i = 0; i < dataList.Count; i++)
                 {
-                    var props = baseType.GetProperties();
                     for (var col = 1; col <= props.Length; col++)
                     {
-                        sheet.Cells[row, col].Value = props[col-1].GetValue(dataList[row]);
+                        sheet.Cells[row, col].Value = props[col-1].GetValue(dataList[i]);
                     }
+                    row++;
                 }
 
-                //var reportType = report.Data().First();
-                //sheet.Cells["A" + end].LoadFromCollection(report.Data());
                 sheet.Cells.AutoFitColumns();
             }
 

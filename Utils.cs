@@ -43,6 +43,11 @@ namespace ExportToExcel
             return truePath;
         }
 
+        /// <summary>
+        /// Returns the <c>DisplayNameAttribute.DisplayName</c> or <c>DisplayAttribute.Name</c> for a Member. Used by <c>XlBlankSource</c> for creating header values.
+        /// </summary>
+        /// <param name="member">The Member to check for attribute</param>
+        /// <returns></returns>
         public static string GetDisplayName(this MemberInfo member)
         {
             var displayName = (DisplayNameAttribute)Attribute.GetCustomAttribute(member, typeof(DisplayNameAttribute));

@@ -26,10 +26,9 @@ namespace ExportToExcel
                 {
                     // Name each sheet if a name was provided, or use the model name.
                     sheet.Name = sheet.Name ?? sheet.Type.Name;
-                    ExcelWorksheet worksheet;
 
                     // If a sheet with this name doesn't exist, create it. 
-                    worksheet = xl.Workbook.Worksheets[sheet.Name] ?? CreateSheet(xl, sheet);
+                    var worksheet = xl.Workbook.Worksheets[sheet.Name] ?? CreateSheet(xl, sheet);
                     AddRows(worksheet, sheet);
                     worksheet.Cells.AutoFitColumns();
                 }
@@ -61,9 +60,8 @@ namespace ExportToExcel
         /// </summary>
         /// <param name="xl">ExcelPackage for creating worksheet</param>
         /// <param name="sheet">The XlSheet object containing the sheet data.</param>
-        /// <param name="sheetName">The sheet name, provided by user or determined by type.</param>
         /// <returns>The newly created worksheet</returns>
-        public ExcelWorksheet CreateSheet(ExcelPackage xl, XlSheet sheet)
+        private ExcelWorksheet CreateSheet(ExcelPackage xl, XlSheet sheet)
         {
             // Create worksheet, set header style
             var worksheet = xl.Workbook.Worksheets.Add(sheet.Name);
@@ -98,7 +96,7 @@ namespace ExportToExcel
         /// <param name="worksheet">The worksheet object to add rows to.</param>
         /// <param name="data">The data to add to the sheet.</param>
         /// <returns>The resulting worksheet.</returns>
-        public ExcelWorksheet AddRows(ExcelWorksheet worksheet, XlSheet data)
+        private ExcelWorksheet AddRows(ExcelWorksheet worksheet, XlSheet data)
         {
             var sheetList = data.Data().ToList();
             var baseType = sheetList[0].GetType();
