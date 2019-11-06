@@ -27,7 +27,10 @@ namespace ExportToExcel
         {
             this._data = sheets.ToList();
             this._file = new XlFileInfo(name, sheets, method);
-            this.xl = new ExcelPackage(_file.FileSource.Load());
+            using (var stream = this._file.FileSource.Load())
+            {
+                this.xl = new ExcelPackage(stream);
+            }
         }
 
         /// <summary>
@@ -45,8 +48,11 @@ namespace ExportToExcel
             {
                 _file.FileSource = new XlBlankSource(sheets);
             }
-            
-            this.xl = new ExcelPackage(_file.FileSource.Load());
+
+            using (var stream = this._file.FileSource.Load())
+            {
+                this.xl = new ExcelPackage(stream);
+            }
 
             if (selected != null)
             {
@@ -59,6 +65,10 @@ namespace ExportToExcel
             var newData = new XlSheet(data);
             _data = new List<XlSheet> { newData };
             _file = new XlFileInfo(newData.Type.Name, _data);
+            using (var stream = this._file.FileSource.Load())
+            {
+                this.xl = new ExcelPackage(stream);
+            }
         }
 
         /// <summary>
