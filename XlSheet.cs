@@ -8,7 +8,6 @@ namespace ExportToExcel
     /// <summary>
     /// Class for transmitting information about data into the exporter.
     /// </summary>
-    /// <typeparam name="T"></typeparam>
     public class XlSheet
     {
         private List<object> _data;

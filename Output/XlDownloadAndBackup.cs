@@ -12,7 +12,14 @@ namespace ExportToExcel
         /// <returns></returns>
         public byte[] Save(byte[] data, XlFileInfo file)
         {
-            File.WriteAllBytes($"{file.BackupPath}{file.FileName}", data);
+            try
+            {
+                File.WriteAllBytes($"{file.BackupPath}{file.FileName}", data);
+            }
+            catch (IOException e)
+            {
+                
+            }
 
             return data;
         }

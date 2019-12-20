@@ -8,7 +8,7 @@ namespace ExportToExcel
     {
         private string _path { get; set; }
         private bool isValid { get; }
-        
+
         /// <summary>
         /// Provides source to a template file on disk.
         /// </summary>
@@ -69,7 +69,7 @@ namespace ExportToExcel
         /// <returns>True if valid, False if not.</returns>
         public bool IsValid()
         {
-            return this.isValid;
+            return isValid;
         }
     }
 }

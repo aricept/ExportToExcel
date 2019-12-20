@@ -1,11 +1,9 @@
 ﻿using OfficeOpenXml;
-using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.ComponentModel.DataAnnotations;
-using System.ComponentModel;
 
 namespace ExportToExcel
 {
@@ -25,7 +23,7 @@ namespace ExportToExcel
                 foreach (var sheet in data)
                 {
                     // Name each sheet if a name was provided, or use the model name.
-                    sheet.Name = sheet.Name ?? sheet.Type.Name;
+                    sheet.Name ??= sheet.Type.Name;
 
                     // If a sheet with this name doesn't exist, create it. 
                     var worksheet = xl.Workbook.Worksheets[sheet.Name] ?? CreateSheet(xl, sheet);
@@ -33,7 +31,7 @@ namespace ExportToExcel
                     worksheet.Cells.AutoFitColumns();
                 }
 
-                this._data = xl.GetAsByteArray();
+                _data = xl.GetAsByteArray();
             }
         }
 
@@ -43,7 +41,7 @@ namespace ExportToExcel
         /// <returns><c>MemoryStream</c> of report data.</returns>
         public Stream Load()
         {
-            return new MemoryStream(this._data);
+            return new MemoryStream(_data);
         }
 
         /// <summary>
@@ -61,22 +59,25 @@ namespace ExportToExcel
         /// <param name="xl">ExcelPackage for creating worksheet</param>
         /// <param name="sheet">The XlSheet object containing the sheet data.</param>
         /// <returns>The newly created worksheet</returns>
-        private ExcelWorksheet CreateSheet(ExcelPackage xl, XlSheet sheet)
+        public static ExcelWorksheet CreateSheet(ExcelPackage xl, XlSheet sheet)
         {
             // Create worksheet, set header style
             var worksheet = xl.Workbook.Worksheets.Add(sheet.Name);
             var headerStyle = worksheet.Row(1).Style;
             headerStyle.Font.Bold = true;
             headerStyle.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Center;
+            var data = sheet.Data().ToList();
 
             // Gets object properties based on type.
-            var props = sheet.Data().ToList()[0].GetType().GetProperties();
+            var type = data[0].GetType();
+            var props = type.GetProperties().Where(p => !p.XlIgnore(type)).ToList();
 
             // Loops through properties and adds property name or Display Name as column header.
-            for (var col = 1; col <= props.Length; col++)
+            for (var col = 1; col <= props.Count; col++)
             {
                 var prop = props[col - 1];
-                var displayName = prop.GetDisplayName();
+
+                var displayName = prop.GetDisplayName(type);
                 if (!string.IsNullOrEmpty(displayName))
                 {
                     worksheet.Cells[1, col].Value = displayName;
@@ -100,17 +101,28 @@ namespace ExportToExcel
         {
             var sheetList = data.Data().ToList();
             var baseType = sheetList[0].GetType();
-            var props = baseType.GetProperties();
+            var props = baseType.GetProperties().Where(p => !p.XlIgnore(baseType)).ToList();
 
             var firstBlank = worksheet.Dimension.Rows + 1;
             var row = firstBlank;
             for (var i = 0; i < sheetList.Count; i++)
             {
-                for (var col = 1; col <= props.Length; col++)
+                for (var col = 1; col <= props.Count; col++)
                 {
                     worksheet.Cells[row, col].Value = props[col - 1].GetValue(sheetList[row - firstBlank]);
                 }
                 row++;
+            }
+
+            var formatCol = 1;
+            foreach (var prop in props)
+            {
+                var dataType = prop.GetDataType(baseType);
+                if (dataType == DataType.Date || dataType == DataType.DateTime)
+                {
+                    worksheet.Cells[2, formatCol, sheetList.Count + 1, formatCol].Style.Numberformat.Format = "mm/dd/yyyy hh:mm";
+                }
+                formatCol++;
             }
 
             return worksheet;

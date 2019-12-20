@@ -9,7 +9,7 @@ namespace ExportToExcel
         private ExcelPackage xl { get; set; }
         private byte[] xlData { get; set; }
         private List<XlSheet> _data { get; set; }
-        private XlFileInfo _file { get; set; }
+        public XlFileInfo File { get; set; }
 
         /// <summary>
         /// Tuple for providing optional selected cell on file open.
@@ -25,11 +25,11 @@ namespace ExportToExcel
         /// <param name="method">The optional save method: Local or Download.</param>
         public XlExporter(IEnumerable<XlSheet> sheets, string name, XlSaveMethod method = XlSaveMethod.Local)
         {
-            this._data = sheets.ToList();
-            this._file = new XlFileInfo(name, sheets, method);
-            using (var stream = this._file.FileSource.Load())
+            _data = sheets.ToList();
+            File = new XlFileInfo(name, sheets, method);
+            using (var stream = File.FileSource.Load())
             {
-                this.xl = new ExcelPackage(stream);
+                xl = new ExcelPackage(stream);
             }
         }
 
@@ -41,17 +41,17 @@ namespace ExportToExcel
         /// <param name="selected">Optional Tuple containing the sheetname and cell address to be selected when opening the file.</param>
         public XlExporter(IEnumerable<XlSheet> sheets, XlFileInfo fileInfo, (string sheet, string cell)? selected = null)
         {
-            this._data = sheets.ToList();
-            this._file = fileInfo;
+            _data = sheets.ToList();
+            File = fileInfo;
 
-            if (_file.FileSource == null || !_file.FileSource.IsValid())
+            if (File.FileSource == null || !File.FileSource.IsValid())
             {
-                _file.FileSource = new XlBlankSource(sheets);
+                File.FileSource = new XlBlankSource(sheets);
             }
 
-            using (var stream = this._file.FileSource.Load())
+            using (var stream = File.FileSource.Load())
             {
-                this.xl = new ExcelPackage(stream);
+                xl = new ExcelPackage(stream);
             }
 
             if (selected != null)
@@ -64,10 +64,10 @@ namespace ExportToExcel
         {
             var newData = new XlSheet(data);
             _data = new List<XlSheet> { newData };
-            _file = new XlFileInfo(newData.Type.Name, _data);
-            using (var stream = this._file.FileSource.Load())
+            File = new XlFileInfo(newData.Type.Name, _data);
+            using (var stream = File.FileSource.Load())
             {
-                this.xl = new ExcelPackage(stream);
+                xl = new ExcelPackage(stream);
             }
         }
 
@@ -79,18 +79,22 @@ namespace ExportToExcel
         {
             foreach (var report in _data)
             {
-                if (_file.FileSource.GetType().Equals(typeof(XlBlankSource)))
+                if (File.FileSource.GetType().Equals(typeof(XlBlankSource)))
                 {
                     break;
                 }
 
+                var baseType = report.Data().First().GetType();
+                // ??= introduced in C# 8 assigns the right hand value to the left hand only if the left hand is null.
+                // Here, if report.Name is null, assigns the baseType as the report name.
+                report.Name ??= baseType.Name;
                 ExcelWorksheet sheet;
                 int row;
 
                 if (xl.Workbook.Worksheets[report.Name] == null)
                 {
-                    sheet = xl.Workbook.Worksheets.Add(report.Name);
-                    row = 1;
+                    sheet = XlBlankSource.CreateSheet(xl, report);//xl.Workbook.Worksheets.Add(sheetName);
+                    row = 2;
                 }
                 else
                 {
@@ -98,15 +102,15 @@ namespace ExportToExcel
                     row = sheet.Dimension.End.Row + 1;
                 }
 
-                var baseType = report.Data().First().GetType();
+                
                 var dataList = report.Data().ToList();
-                var props = baseType.GetProperties();
+                var props = baseType.GetProperties().Where(p => !p.XlIgnore(baseType)).ToList();
 
                 for (var i = 0; i < dataList.Count; i++)
                 {
-                    for (var col = 1; col <= props.Length; col++)
+                    for (var col = 1; col <= props.Count; col++)
                     {
-                        sheet.Cells[row, col].Value = props[col-1].GetValue(dataList[i]);
+                        sheet.Cells[row, col].Value = props[col - 1].GetValue(dataList[i]);
                     }
                     row++;
                 }
@@ -121,7 +125,7 @@ namespace ExportToExcel
 
             xlData = xl.GetAsByteArray();
 
-            return _file.Output.Save(xlData, _file);
+            return xlData;// File.Output.Save(xlData, File);
         }
 
         public void AddSheet(IEnumerable<object> data)

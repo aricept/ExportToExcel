@@ -1,10 +1,5 @@
-﻿using OfficeOpenXml;
-using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace ExportToExcel
 {
@@ -20,7 +15,6 @@ namespace ExportToExcel
         public string FileName { get; set; }
         public string BackupPath { get; set; }
         public IXlOutput Output { get; set; }
-        private ExcelPackage xl;
 
         public XlFileInfo() { }
 
@@ -85,7 +79,7 @@ namespace ExportToExcel
             }
             else
             {
-                Output = new XlDownloadAndBackup();
+                Output = new XlDownload/*AndBackup*/();
             }
 
             FileSource = new XlFileSource(source);

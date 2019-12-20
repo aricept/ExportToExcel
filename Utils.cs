@@ -3,6 +3,7 @@ using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Configuration;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 using System.Web.Hosting;
 
@@ -27,17 +28,22 @@ namespace ExportToExcel
                 tempPath = path;
             }
 
-            tempPath = HostingEnvironment.MapPath(tempPath);
-
-            if (Directory.Exists(tempPath))
-            {
-                truePath = tempPath;
-                exists = true;
-            }
-            else if (Directory.Exists(path))
+            if (Directory.Exists(path))
             {
                 truePath = path;
                 exists = true;
+            } 
+            else
+            {
+                try
+                {
+                    truePath = HostingEnvironment.MapPath(tempPath);
+                    exists = true;
+                }
+                catch (ArgumentException e)
+                {
+                    
+                }
             }
 
             return truePath;
@@ -48,7 +54,7 @@ namespace ExportToExcel
         /// </summary>
         /// <param name="member">The Member to check for attribute</param>
         /// <returns></returns>
-        public static string GetDisplayName(this MemberInfo member)
+        public static string GetDisplayName(this MemberInfo member, Type type)
         {
             var displayName = (DisplayNameAttribute)Attribute.GetCustomAttribute(member, typeof(DisplayNameAttribute));
             if (displayName != null)
@@ -62,7 +68,68 @@ namespace ExportToExcel
                 return displayAttrName.Name;
             }
 
+            var metaTypeAttr = (MetadataTypeAttribute)type.GetCustomAttributes(typeof(MetadataTypeAttribute), true).OfType<MetadataTypeAttribute>().FirstOrDefault();
+            if (metaTypeAttr != null)
+            {
+                var metaType = metaTypeAttr.MetadataClassType;
+                var prop = metaType.GetMember(member.Name).FirstOrDefault();
+                var metaAttr = prop.GetCustomAttribute<DisplayAttribute>();
+
+                if (metaAttr != null)
+                {
+                    return metaAttr.Name;
+                }
+            }
+
             return string.Empty;
+        }
+
+        public static bool XlIgnore(this MemberInfo member, Type type)
+        {
+            var ignore = (XlIgnoreAttribute)Attribute.GetCustomAttribute(member, typeof(XlIgnoreAttribute));
+            if (ignore != null)
+            {
+                return true;
+            }
+
+            var metaTypeAttr = (MetadataTypeAttribute)type.GetCustomAttributes(typeof(MetadataTypeAttribute), true).OfType<MetadataTypeAttribute>().FirstOrDefault();
+            if(metaTypeAttr != null)
+            {
+                var metaType = metaTypeAttr.MetadataClassType;
+                var prop = metaType.GetMember(member.Name).FirstOrDefault();
+                var metaAttr = prop.GetCustomAttribute<XlIgnoreAttribute>();
+
+                if (metaAttr != null)
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        public static DataType GetDataType(this MemberInfo member, Type type)
+        {
+            var dataType = (DataTypeAttribute)Attribute.GetCustomAttribute(member, typeof(DataTypeAttribute));
+            if (dataType != null)
+            {
+                return dataType.DataType;
+            }
+
+            var metaTypeAttr = (MetadataTypeAttribute)type.GetCustomAttributes(typeof(MetadataTypeAttribute), true).OfType<MetadataTypeAttribute>().FirstOrDefault();
+            if (metaTypeAttr != null)
+            {
+                var metaType = metaTypeAttr.MetadataClassType;
+                var prop = metaType.GetMember(member.Name).FirstOrDefault();
+                var metaAttr = prop.GetCustomAttribute<DataTypeAttribute>();
+
+                if (metaAttr != null)
+                {
+                    return metaAttr.DataType;
+                }
+            }
+
+            return DataType.Text;
         }
     }
 }
